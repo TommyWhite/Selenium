@@ -20,7 +20,6 @@ namespace SeleniumHelloWorld
         {
             try
             {
-                //asdfasdfasdfasdf
                 Run();
             }
             catch (Exception ex)
