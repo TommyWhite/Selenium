@@ -3,6 +3,7 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.IO;
 using System.Text;
 using System.Threading;
 
@@ -15,7 +16,9 @@ namespace SeleniumHelloWorld
         private const string URL_GOV_US = @"https://usr.minjust.gov.ua/ua/freesearch/";
         private const string ID_SEARCH_INPUT = "query";
         private const string NO = "3403201375";
-    
+        private const string FRAME_CLASS_NAME = "extiframe";
+        private const string SCREEN_MAX = "--start-maximized";
+
         private static void Main(string[] args)
         {
             try
@@ -31,24 +34,34 @@ namespace SeleniumHelloWorld
         public static void Run()
         {
             ChromeOptions chromeOpt = new ChromeOptions();
-            chromeOpt.AddArgument("--start-maximized");
+            chromeOpt.AddArgument(SCREEN_MAX);
             IWebDriver driver = new ChromeDriver(chromeOpt);
 
             driver.Navigate().GoToUrl(URL_GOV_US);
-            driver.SwitchTo().Frame(driver.FindElement(By.ClassName("extiframe")));
+            driver.SwitchTo().Frame(driver.FindElement(By.ClassName(FRAME_CLASS_NAME)));
             var searchCtrl = WaitForElementToAppear(driver, 5, By.Id(ID_SEARCH_INPUT));
             searchCtrl.SendKeys(NO);
             searchCtrl.SendKeys(Keys.Enter);
-            
-            Thread.Sleep(15000);
-            //driver.SwitchTo().Frame(driver.FindElement(By.ClassName("extiframe")));
+
+
+            Thread.Sleep(TimeSpan.FromSeconds(10));
+            WaitForElementToAppear(driver, 30, By.ClassName("searchother"));
+
+            //driver.SwitchTo().Frame(driver.FindElement(By.ClassName(FRAME_CLASS_NAME)));
             var table = WaitForElementToAppear(driver, 30, By.Id("detailtable"));
-            var ctrls = driver.FindElements(By.TagName("td"));
-            foreach (var item in ctrls)
+            //var frame = WaitForElementToAppear(driver, 30, By.ClassName(FRAME_CLASS_NAME));
+            var body = WaitForElementToAppear(driver, 30, By.TagName("body"));
+
+            string  data = table.GetAttribute("innerHTML");
+            data = body.GetAttribute("innerHTML");
+            string codeBase = AppDomain.CurrentDomain.BaseDirectory;
+            string name = $"{NO}.html";
+            string output = Path.Combine(codeBase, name);
+            using (TextWriter writer = File.CreateText(output))
             {
-                Console.WriteLine(item.Text);
+                writer.WriteLine(data);
             }
-            //driver.Quit();
+            driver.Quit();
         }
 
         public static IWebElement WaitForElementToAppear(IWebDriver driver, int waitTime, By waitingElement)
