@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 
-namespace DataCollector
+namespace EmployeeInfoGrabber
 {
     internal class Program
     {

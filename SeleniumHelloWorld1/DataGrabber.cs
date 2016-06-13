@@ -9,7 +9,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 
-namespace DataCollector
+namespace EmployeeInfoGrabber
 {
     public class DataGrabber : IDisposable
     {

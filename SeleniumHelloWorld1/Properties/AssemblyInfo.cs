@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SeleniumHelloWorld")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("EmployeeInfoGrabber")]
+[assembly: AssemblyDescription("Gets info based on personal tax number of the person.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("SeleniumHelloWorld")]
+[assembly: AssemblyCompany("Delphi LLC")]
+[assembly: AssemblyProduct("DataGrabber")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

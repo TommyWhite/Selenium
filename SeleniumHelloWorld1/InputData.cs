@@ -1,6 +1,6 @@
 ﻿using System.Configuration;
 
-namespace DataCollector
+namespace EmployeeInfoGrabber
 {
     public class InputData : ConfigurationSection
     {

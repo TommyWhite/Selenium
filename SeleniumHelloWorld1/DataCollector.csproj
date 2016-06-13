@@ -7,8 +7,8 @@
     <ProjectGuid>{24E8DA80-77E9-4BCB-9803-8ADA8F8BD97A}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DataCollector</RootNamespace>
-    <AssemblyName>DataCollector</AssemblyName>
+    <RootNamespace>EmployeeInfoGrabber</RootNamespace>
+    <AssemblyName>EmployeeInfoGrabber</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -48,7 +48,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>DataCollector.Program</StartupObject>
+    <StartupObject>EmployeeInfoGrabber.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
