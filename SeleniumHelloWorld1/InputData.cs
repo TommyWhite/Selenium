@@ -1,6 +1,6 @@
 ﻿using System.Configuration;
 
-namespace SeleniumHelloWorld
+namespace DataCollector
 {
     public class InputData : ConfigurationSection
     {

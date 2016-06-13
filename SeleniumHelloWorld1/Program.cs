@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 
-namespace SeleniumHelloWorld
+namespace DataCollector
 {
     internal class Program
     {
@@ -18,6 +18,7 @@ namespace SeleniumHelloWorld
 
         public static void Run()
         {
+            GlobalVars global = new GlobalVars();
             // Initialize data via Configuration Section (need to be fixed)
             //var settings = ConfigurationManager.GetSection(typeof(InputData).Name);
             //InputData inputData = settings as InputData;
@@ -56,8 +57,8 @@ namespace SeleniumHelloWorld
             {
                 foreach (var item in list)
                 {
-                    string codeBase = AppDomain.CurrentDomain.BaseDirectory;
-                    string name = $"{Globals.TAX_NUMBER}.html";
+                    string codeBase = global.BaseDir;
+                    string name = $"{item}.html";
                     var grabbed = grabber.GrabData(item);
                     grabber.SaveDataTo(codeBase, name, grabbed);
                 }
@@ -72,6 +73,4 @@ namespace SeleniumHelloWorld
             }
         }
     }
-
-    
 }

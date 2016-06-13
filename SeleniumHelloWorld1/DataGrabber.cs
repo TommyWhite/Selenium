@@ -6,11 +6,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace SeleniumHelloWorld
+namespace DataCollector
 {
     public class DataGrabber : IDisposable
     {
@@ -21,7 +20,7 @@ namespace SeleniumHelloWorld
         private void Initialize()
         {
             ChromeOptions chromeOpt = new ChromeOptions();
-            chromeOpt.AddArgument(Globals.SCREEN_MAX);
+            chromeOpt.AddArgument(GlobalVars.SCREEN_MAX);
             driver = new ChromeDriver(chromeOpt);
         }
 
@@ -42,18 +41,12 @@ namespace SeleniumHelloWorld
             Initialize();
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
         public string GrabData(string taxNum)
         {
-            driver.Navigate().GoToUrl(Globals.URL_GOV_US);
-            driver.SwitchTo().Frame(driver.FindElement(By.ClassName(Globals.FRAME_CLASS_NAME)));
-            var searchField = WaitForElementToAppear(driver, 5, By.Id(Globals.ID_SEARCH_INPUT));
-            searchField.SendKeys(Globals.TAX_NUMBER);
+            driver.Navigate().GoToUrl(GlobalVars.URL_GOV_US);
+            driver.SwitchTo().Frame(driver.FindElement(By.ClassName(GlobalVars.FRAME_CLASS_NAME)));
+            var searchField = WaitForElementToAppear(driver, 5, By.Id(GlobalVars.ID_SEARCH_INPUT));
+            searchField.SendKeys(GlobalVars.TAX_NUMBER);
             searchField.SendKeys(Keys.Enter);
 
             Thread.Sleep(TimeSpan.FromSeconds(30));
@@ -65,6 +58,7 @@ namespace SeleniumHelloWorld
             //var frame = WaitForElementToAppear(driver, 30, By.ClassName(FRAME_CLASS_NAME));
             var body = WaitForElementToAppear(driver, 30, By.TagName("body"));
 
+            //TODO: Chose the right data to be saved.
             string tableInner = table.GetAttribute("innerHTML");
             string bodyInner = body.GetAttribute("innerHTML");
 
@@ -86,46 +80,15 @@ namespace SeleniumHelloWorld
             }
         }
 
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
 
     public class ExcelDataProvider
     {
-        public DataSet ReadExcelFile(string filePath)
-        {
-            DataSet ds = new DataSet();
-
-            string connectionString = GetConnectionString(filePath);
-
-            using (OleDbConnection conn = new OleDbConnection(connectionString))
-            {
-                conn.Open();
-                OleDbCommand cmd = new OleDbCommand();
-                cmd.Connection = conn;
-
-                // Get all Sheets in Excel File
-                DataTable dtSheet = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
-
-                string sheetName = "Sheet1$";
-                
-                cmd.CommandText = $"SELECT * FROM [{sheetName}]";
-
-                DataTable dt = new DataTable()
-                {
-                    TableName = sheetName
-                };
-
-                OleDbDataAdapter da = new OleDbDataAdapter(cmd);
-                da.Fill(dt);
-
-                ds.Tables.Add(dt);
-
-                conn.Close();
-            }
-            
-
-            return ds;
-        }
-
         private string GetConnectionString(string fileName)
         {
             Dictionary<string, string> props = new Dictionary<string, string>();
@@ -147,5 +110,39 @@ namespace SeleniumHelloWorld
             return sb.ToString();
         }
 
+        public DataSet ReadExcelFile(string filePath)
+        {
+            DataSet ds = new DataSet();
+
+            string connectionString = GetConnectionString(filePath);
+
+            using (OleDbConnection conn = new OleDbConnection(connectionString))
+            {
+                conn.Open();
+                OleDbCommand cmd = new OleDbCommand();
+                cmd.Connection = conn;
+
+                // Get all Sheets in Excel File
+                DataTable dtSheet = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
+
+                string sheetName = "Sheet1$";
+
+                cmd.CommandText = $"SELECT * FROM [{sheetName}]";
+
+                DataTable dt = new DataTable()
+                {
+                    TableName = sheetName
+                };
+
+                OleDbDataAdapter da = new OleDbDataAdapter(cmd);
+                da.Fill(dt);
+
+                ds.Tables.Add(dt);
+
+                conn.Close();
+            }
+
+            return ds;
+        }
     }
 }
