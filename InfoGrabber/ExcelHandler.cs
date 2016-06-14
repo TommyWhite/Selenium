@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using ExcelLibrary;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
 using System.Text;
 
 namespace EmployeeInfoGrabber
 {
-    public class ExcelDataProvider
+    public class ExcelHandler
     {
-        private string GetConnectionString(string fullFilePath)
+        private string BuildConnectionString(string fullFilePath)
         {
             Dictionary<string, string> props = new Dictionary<string, string>()
             {
@@ -27,7 +28,7 @@ namespace EmployeeInfoGrabber
         public DataSet ReadExcelFile(string fullFilePath)
         {
             DataSet ds = new DataSet();
-            string connectionString = GetConnectionString(fullFilePath);
+            string connectionString = BuildConnectionString(fullFilePath);
             using (OleDbConnection conn = new OleDbConnection(connectionString))
             {
                 conn.Open();
@@ -49,6 +50,25 @@ namespace EmployeeInfoGrabber
             }
 
             return ds;
+        }
+
+        public void WriteExcelFile(string fullNamePath, DataSet data)
+        {
+            //TODO: Test and remove.
+            fullNamePath = @"MyExcelFile.xls";
+            #region Just for testion purposes 
+            //Create the data set and table
+            DataSet ds = new DataSet("New_DataSet")
+            {
+                Locale = System.Threading.Thread.CurrentThread.CurrentCulture
+            };
+            DataTable dt = new DataTable("New_DataTable")
+            {
+                Locale = System.Threading.Thread.CurrentThread.CurrentCulture
+            };
+            #endregion
+            
+            DataSetHelper.CreateWorkbook(fullNamePath, ds);
         }
     }
 }

@@ -51,6 +51,10 @@
     <StartupObject>EmployeeInfoGrabber.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ExcelLibrary, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ExcelLibrary.1.2011.7.31\lib\ExcelLibrary.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
@@ -80,7 +84,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExcelDataProvider.cs" />
+    <Compile Include="ExcelHandler.cs" />
     <Compile Include="InputData.cs" />
     <Compile Include="DataGrabber.cs" />
     <Compile Include="GlobalVars.cs" />

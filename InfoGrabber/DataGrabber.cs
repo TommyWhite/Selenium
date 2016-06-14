@@ -93,7 +93,7 @@ namespace EmployeeInfoGrabber
         //TODO: Implement input file and output dir for HTML reports.
         public void Run(string inputXML, string outputDir)
         {
-            var ddt = new ExcelDataProvider();
+            var ddt = new ExcelHandler();
             var data = ddt.ReadExcelFile(inputXML);
             List<string> VATINList = new List<string>();
 
