@@ -7,15 +7,12 @@ namespace EmployeeInfoGrabber
     {
         private static void Main(string[] args)
         {
+            string fileName = "input.xlsx";
+            string inputFullPath = Path.Combine(AppContext.BaseDirectory, "Resources", "Input", fileName);
+            string outputFullPath = Path.Combine(AppContext.BaseDirectory, "Resources", "Output");
 
             DataGrabber grabber = new DataGrabber();
-
-            string fileName = "3.xlsx";
-            var excelFile = $@"C:\Users\artemm\Desktop\EmployeeInfoGrabber\InfoGrabber\bin\Debug\{fileName}";
-
-            var outputPath = Path.Combine(AppContext.BaseDirectory, "reports");
-            grabber.Run(excelFile, outputPath);
+            grabber.Run(inputFullPath, outputFullPath);
         }
-
     }
 }

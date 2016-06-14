@@ -46,12 +46,41 @@ namespace EmployeeInfoGrabber
             driver.Navigate().GoToUrl(GlobalVars.URL_GOV_US);
             driver.SwitchTo().Frame(driver.FindElement(By.ClassName(GlobalVars.FRAME_CLASS_NAME)));
             var searchField = WaitForElementToAppear(driver, 5, By.Id(GlobalVars.ID_SEARCH_INPUT));
-            searchField.SendKeys(GlobalVars.TAX_NUMBER);
+            searchField.SendKeys(taxNum);
             searchField.SendKeys(Keys.Enter);
 
-            Thread.Sleep(TimeSpan.FromSeconds(30));
-            //TODO: W8 and click to the OK button on the reCAPTCHA
-            WaitForElementToAppear(driver, 90, By.ClassName("searchother"));
+            
+            bool waitableCtrlExists = false;
+            do
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(5));
+                IWebElement waitableCtrl = null;
+                try
+                {
+                    waitableCtrl = WaitForElementToAppear(driver, 1, By.ClassName("detailinfo"));
+                }
+                catch(Exception ex)
+                {
+                    /* 
+                     * Exception caught if captcha is not passed in 5 seconds.
+                     * Just pending flow while needed control is not found. 
+                     * Supposed that user is passing reCAPTCHA
+                    */
+                }
+                finally
+                {
+                    waitableCtrlExists = waitableCtrl == null ? true : false;
+                }
+                
+            } while (waitableCtrlExists);
+
+            var queryResults = driver.FindElements(By.TagName("tr"));
+            var buttonDetails = queryResults.Where(element => element.GetAttribute("innerHTML")
+            .Contains("не перебуває в процесі припинення"))
+            .Select(f => f.FindElements(By.TagName("input"))[1]).SingleOrDefault();
+            buttonDetails.Click();
+
+            IWebElement contentWaitableCtrl = WaitForElementToAppear(driver, 10, By.ClassName("searchother"));
 
             string edittedContent;
             try
@@ -89,8 +118,7 @@ namespace EmployeeInfoGrabber
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
-        //TODO: Implement input file and output dir for HTML reports.
+        
         public void Run(string inputXML, string outputDir)
         {
             var ddt = new ExcelHandler();
