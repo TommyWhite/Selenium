@@ -84,6 +84,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExcelCreator.cs" />
     <Compile Include="ExcelHandler.cs" />
     <Compile Include="InputData.cs" />
     <Compile Include="DataGrabber.cs" />

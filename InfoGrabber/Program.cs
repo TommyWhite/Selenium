@@ -16,5 +16,6 @@ namespace EmployeeInfoGrabber
             var outputPath = Path.Combine(AppContext.BaseDirectory, "reports");
             grabber.Run(excelFile, outputPath);
         }
+
     }
 }

@@ -25,20 +25,20 @@ namespace EmployeeInfoGrabber
             return sb.ToString();
         }
 
-        public DataSet ReadExcelFile(string fullFilePath)
+        public DataSet ReadExcelFile(string fullFilePath, string sheetName = "Sheet1$")
         {
             DataSet ds = new DataSet();
             string connectionString = BuildConnectionString(fullFilePath);
             using (OleDbConnection conn = new OleDbConnection(connectionString))
             {
                 conn.Open();
-                OleDbCommand cmd = new OleDbCommand();
-                cmd.Connection = conn;
+                OleDbCommand cmd = new OleDbCommand()
+                {
+                    Connection = conn,
+                    CommandText = $"SELECT * FROM [{sheetName}]"
+                };
 
-                // Get all Sheets in Excel File
                 DataTable dtSheet = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
-                string sheetName = "Sheet1$";
-                cmd.CommandText = $"SELECT * FROM [{sheetName}]";
                 DataTable dt = new DataTable()
                 {
                     TableName = sheetName
@@ -53,22 +53,8 @@ namespace EmployeeInfoGrabber
         }
 
         public void WriteExcelFile(string fullNamePath, DataSet data)
-        {
-            //TODO: Test and remove.
-            fullNamePath = @"MyExcelFile.xls";
-            #region Just for testion purposes 
-            //Create the data set and table
-            DataSet ds = new DataSet("New_DataSet")
-            {
-                Locale = System.Threading.Thread.CurrentThread.CurrentCulture
-            };
-            DataTable dt = new DataTable("New_DataTable")
-            {
-                Locale = System.Threading.Thread.CurrentThread.CurrentCulture
-            };
-            #endregion
-            
-            DataSetHelper.CreateWorkbook(fullNamePath, ds);
+        { 
+            DataSetHelper.CreateWorkbook(fullNamePath, data);
         }
     }
 }
