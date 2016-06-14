@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Data.OleDb;
 using System.IO;
-using System.Linq;
-using Excel = Microsoft.Office.Interop.Excel;
 
 namespace EmployeeInfoGrabber
 {
@@ -15,7 +9,12 @@ namespace EmployeeInfoGrabber
         {
 
             DataGrabber grabber = new DataGrabber();
-            grabber.Run(null, null);
+
+            string fileName = "3.xlsx";
+            var excelFile = $@"C:\Users\artemm\Desktop\EmployeeInfoGrabber\InfoGrabber\bin\Debug\{fileName}";
+
+            var outputPath = Path.Combine(AppContext.BaseDirectory, "reports");
+            grabber.Run(excelFile, outputPath);
         }
     }
 }
