@@ -3,9 +3,11 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.OleDb;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 
@@ -53,16 +55,20 @@ namespace EmployeeInfoGrabber
             //TODO: W8 and click to the OK button on the reCAPTCHA
             WaitForElementToAppear(driver, 90, By.ClassName("searchother"));
 
-            //driver.SwitchTo().Frame(driver.FindElement(By.ClassName(FRAME_CLASS_NAME)));
-            var table = WaitForElementToAppear(driver, 30, By.Id("detailtable"));
-            //var frame = WaitForElementToAppear(driver, 30, By.ClassName(FRAME_CLASS_NAME));
-            var body = WaitForElementToAppear(driver, 30, By.TagName("body"));
+            string edittedContent;
+            try
+            {
+                var iframeCtrl = WaitForElementToAppear(driver, 90, By.TagName("html"));
+                string frameContent = iframeCtrl.GetAttribute("innerHTML");
+                string removableString = "<form method=\"post\" class=\"searchother\"><input name=\"searchother\" type=\"submit\" value=\"Шукати ще\"></form>";
+                edittedContent = frameContent.Replace(removableString, "");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to grab content from html page. Message: {ex.Message}");
+            }
 
-            //TODO: Chose the right data to be saved.
-            string tableInner = table.GetAttribute("innerHTML");
-            string bodyInner = body.GetAttribute("innerHTML");
-
-            return tableInner;
+            return edittedContent;
         }
 
         public IWebElement WaitForElementToAppear(IWebDriver driver, int waitTime, By waitingElement)
@@ -85,64 +91,53 @@ namespace EmployeeInfoGrabber
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-    }
 
-    public class ExcelDataProvider
-    {
-        private string GetConnectionString(string fileName)
+        //TODO: Implement input file and output dir for HTML reports.
+        public void Run(string inputXML, string outputDir)
         {
-            Dictionary<string, string> props = new Dictionary<string, string>();
+            GlobalVars global = new GlobalVars();
 
-            props["Provider"] = "Microsoft.ACE.OLEDB.12.0;";
-            props["Extended Properties"] = "Excel 12.0 XML";
-            props["Data Source"] = fileName;
-
-            StringBuilder sb = new StringBuilder();
-
-            foreach (KeyValuePair<string, string> prop in props)
+            string dataFile = ConfigurationManager.AppSettings["excelWithTaxNumbers"];
+            if (string.IsNullOrEmpty(dataFile) && File.Exists(dataFile))
             {
-                sb.Append(prop.Key);
-                sb.Append('=');
-                sb.Append(prop.Value);
-                sb.Append(';');
+                throw new FileNotFoundException("Excel file with input data is not found!");
             }
 
-            return sb.ToString();
-        }
+            var ddt = new ExcelDataProvider();
+            string fileName = "3.xlsx";
+            var filePath = $@"C:\Users\artemm\Desktop\EmployeeInfoGrabber\InfoGrabber\bin\Debug\{fileName}";
+            var data = ddt.ReadExcelFile(filePath);
 
-        public DataSet ReadExcelFile(string filePath)
-        {
-            DataSet ds = new DataSet();
+            List<string> list = new List<string>();
 
-            string connectionString = GetConnectionString(filePath);
-
-            using (OleDbConnection conn = new OleDbConnection(connectionString))
+            foreach (DataRow row in data.Tables[0].Rows)
             {
-                conn.Open();
-                OleDbCommand cmd = new OleDbCommand();
-                cmd.Connection = conn;
+                var number = row.ItemArray.Select(NO => NO.ToString()).ToList();
+                list.AddRange(number);
+            }
 
-                // Get all Sheets in Excel File
-                DataTable dtSheet = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
+            DataGrabber grabber = new DataGrabber();
 
-                string sheetName = "Sheet1$";
-
-                cmd.CommandText = $"SELECT * FROM [{sheetName}]";
-
-                DataTable dt = new DataTable()
+            try
+            {
+                foreach (var item in list)
                 {
-                    TableName = sheetName
-                };
-
-                OleDbDataAdapter da = new OleDbDataAdapter(cmd);
-                da.Fill(dt);
-
-                ds.Tables.Add(dt);
-
-                conn.Close();
+                    string codeBase = global.BaseDir;
+                    string name = $"{item}.html";
+                    var grabbed = grabber.GrabData(item);
+                    grabber.SaveDataTo(codeBase, name, grabbed);
+                }
             }
-
-            return ds;
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                grabber.Dispose();
+            }
         }
     }
+
+    
 }

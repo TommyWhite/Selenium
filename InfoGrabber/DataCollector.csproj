@@ -80,6 +80,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExcelDataProvider.cs" />
     <Compile Include="InputData.cs" />
     <Compile Include="DataGrabber.cs" />
     <Compile Include="GlobalVars.cs" />
