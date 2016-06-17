@@ -13,7 +13,6 @@ namespace EmployeeInfoGrabber
     public class DataGrabber : IDisposable
     {
         private bool _isDisposed = false;
-
         private static IWebDriver driver;
 
         private void Initialize()
@@ -49,6 +48,11 @@ namespace EmployeeInfoGrabber
             searchField.SendKeys(taxNum);
             searchField.SendKeys(Keys.Enter);
 
+            driver.SwitchTo().Frame(driver.FindElement(By.TagName("iframe")));
+
+            const string CAPTCHA = "recaptcha-anchor-label";
+            var captchaCtrl = driver.FindElement(By.Id(CAPTCHA));
+            captchaCtrl.Click();
             
             bool waitableCtrlExists = false;
             do
@@ -57,13 +61,15 @@ namespace EmployeeInfoGrabber
                 IWebElement waitableCtrl = null;
                 try
                 {
+                    driver.SwitchTo().DefaultContent();
+                    driver.SwitchTo().Frame(driver.FindElements(By.TagName("iframe"))[0]);
                     waitableCtrl = WaitForElementToAppear(driver, 1, By.ClassName("detailinfo"));
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    /* 
+                    /*
                      * Exception caught if captcha is not passed in 5 seconds.
-                     * Just pending flow while needed control is not found. 
+                     * Just pending flow while needed control is not found.
                      * Supposed that user is passing reCAPTCHA
                     */
                 }
@@ -71,29 +77,19 @@ namespace EmployeeInfoGrabber
                 {
                     waitableCtrlExists = waitableCtrl == null ? true : false;
                 }
-                
             } while (waitableCtrlExists);
 
             var queryResults = driver.FindElements(By.TagName("tr"));
             var buttonDetails = queryResults.Where(element => element.GetAttribute("innerHTML")
             .Contains("не перебуває в процесі припинення"))
-            .Select(f => f.FindElements(By.TagName("input"))[1]).SingleOrDefault();
+            .Select(f => f.FindElements(By.TagName("input")).Last()).SingleOrDefault();
             buttonDetails.Click();
 
             IWebElement contentWaitableCtrl = WaitForElementToAppear(driver, 10, By.ClassName("searchother"));
-
-            string edittedContent;
-            try
-            {
-                var iframeCtrl = WaitForElementToAppear(driver, 90, By.TagName("html"));
-                string frameContent = iframeCtrl.GetAttribute("innerHTML");
-                string removableString = "<form method=\"post\" class=\"searchother\"><input name=\"searchother\" type=\"submit\" value=\"Шукати ще\"></form>";
-                edittedContent = frameContent.Replace(removableString, "");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to grab content from html page. Message: {ex.Message}");
-            }
+            var iframeCtrl = WaitForElementToAppear(driver, 90, By.TagName("html"));
+            string frameContent = iframeCtrl.GetAttribute("innerHTML");
+            string removableString = "<form method=\"post\" class=\"searchother\"><input name=\"searchother\" type=\"submit\" value=\"Шукати ще\"></form>";
+            string edittedContent = frameContent.Replace(removableString, "");
 
             return edittedContent;
         }
@@ -118,35 +114,28 @@ namespace EmployeeInfoGrabber
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        
+
         public void Run(string inputXML, string outputDir)
         {
-            var ddt = new ExcelHandler();
-            var data = ddt.ReadExcelFile(inputXML);
+            ExcelHandler ddt = new ExcelHandler();
+            DataSet ds = ddt.ReadExcelFile(inputXML);
             List<string> VATINList = new List<string>();
-
-            foreach (DataRow row in data.Tables[0].Rows)
+            var table = ds.Tables[0];
+            for (int i = 0; i < table.Rows.Count; i++)
             {
-                var number = row.ItemArray.Select(NO => NO.ToString()).ToList();
-                VATINList.AddRange(number);
+                var data = table.Rows[i][0].ToString();
+                var outputFile = Path.Combine(outputDir, $"{data}.html");
+                if (string.IsNullOrEmpty(data) || File.Exists(outputFile) || VATINList.Contains(data))
+                    continue;
+                else
+                    VATINList.Add(data);
             }
 
-            try
+            foreach (var taxNumber in VATINList)
             {
-                foreach (var taxNumber in VATINList)
-                {
-                    string itemName = $"{taxNumber}.html";
-                    var grabbed = GrabData(taxNumber);
-                    SaveDataTo(outputDir, itemName, grabbed);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            finally
-            {
-                Dispose();
+                string fileName = $"{taxNumber}.html";
+                var grabbed = GrabData(taxNumber);
+                SaveDataTo(outputDir, fileName, grabbed);
             }
         }
     }

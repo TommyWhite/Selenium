@@ -1,11 +1,12 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using EmployeeInfoGrabber;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
 
 namespace UnitTests.PrototypeCodeSnippets
 {
     [TestClass]
-    public class XlsFileGenerator
+    public class XlsManipulationTest
     {
         private Microsoft.Office.Interop.Excel.Application oXL;
         private Microsoft.Office.Interop.Excel._Workbook oWB;
@@ -13,7 +14,7 @@ namespace UnitTests.PrototypeCodeSnippets
         private Microsoft.Office.Interop.Excel.Range oRng;
 
         [TestMethod]
-        public void CreateXlsDoc()
+        public void PrototypeCreateXlsDoc()
         {
             //Start Excel and get Application object.
             oXL = new Microsoft.Office.Interop.Excel.Application();
@@ -74,14 +75,12 @@ namespace UnitTests.PrototypeCodeSnippets
 
             oXL.UserControl = false;
 
-
             string codeBase = AppContext.BaseDirectory;
             int fileName = 0;
             string outputFile;
             do
             {
                 outputFile = Path.Combine(codeBase, $"{fileName++}.xlsx");
-
             } while (File.Exists(outputFile));
 
             oWB.SaveAs(outputFile, Microsoft.Office.Interop.Excel.XlFileFormat.xlWorkbookDefault, Type.Missing, Type.Missing,
@@ -89,6 +88,42 @@ namespace UnitTests.PrototypeCodeSnippets
                 Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
 
             oWB.Close();
+        }
+
+        [TestMethod]
+        public void CreateXlsDoc()
+        {
+            ExcelHandler excelHndlr = new ExcelHandler();
+
+            string codeBase = AppContext.BaseDirectory;
+            int fileName = 0;
+            string outputFile;
+            do
+            {
+                outputFile = Path.Combine(codeBase, $"{fileName++}.xlsx");
+            } while (File.Exists(outputFile));
+
+            const int ASCII_ALPHAS_OFFSET = 65;
+            string[,] data = new string[10, 16];
+            for (int i = 0; i < data.GetLength(0); i++)
+            {
+                for (int j = 0; j < data.GetLength(1); j++)
+                {
+                    data[i, j] = Convert.ToChar(ASCII_ALPHAS_OFFSET + j).ToString();
+                }
+            }
+
+            excelHndlr.CreateXlsDoc(outputFile, $"A{2}", $"P{10}", data);
+        }
+
+        private ExcelHandler xlsHandler = new ExcelHandler();
+
+        [TestMethod]
+        public void ReadExcelFile()
+        {
+            var ds = xlsHandler.ReadExcelFile("MOCK_DATA.xlsx", "data$");
+            bool dsIsNotEmpty = ds.Tables[0].Rows.Count != 0;
+            Assert.IsTrue(dsIsNotEmpty, "Fails to read xml file.");
         }
     }
 }

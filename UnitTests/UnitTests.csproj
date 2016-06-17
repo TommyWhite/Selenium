@@ -55,14 +55,13 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="ExcelHandlerTests.cs" />
+    <Compile Include="HtmlParserTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="PrototypeCodeSnippets\DataSetTest.cs" />
     <Compile Include="PrototypeCodeSnippets\XlsFileGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
