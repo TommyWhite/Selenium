@@ -4,7 +4,7 @@ using System.Data;
 using System.Data.OleDb;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace EmployeeInfoGrabber
 {
@@ -17,11 +17,14 @@ namespace EmployeeInfoGrabber
         private Microsoft.Office.Interop.Excel._Worksheet oSheet;
         private Microsoft.Office.Interop.Excel.Range oRng;
 
+        /// <summary>
+        /// Gets connection string (x86)
+        /// </summary>
+        /// <param name="fullFilePath">File to read with OleDbConnection</param>
+        /// <returns>Connection string with specified data source.</returns>
         private string BuildConnectionString(string fullFilePath)
         {
-            return $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source="
-                + fullFilePath
-                + ";Extended Properties=\"Excel 12.0;IMEX=1;HDR=NO;TypeGuessRows=0;ImportMixedTypes=Text\"";
+            return $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={fullFilePath};Extended Properties=\"Excel 12.0;IMEX=1;HDR=NO;TypeGuessRows=0;ImportMixedTypes=Text\"";
         }
 
         public DataSet ReadExcelFile(string fullFilePath, string sheetName = "Sheet1$")
@@ -95,13 +98,20 @@ namespace EmployeeInfoGrabber
                     oSheet.Cells[i + TITLE_OFFSET, j + 1] = data[i, j];
                 }
             }
-
             oSheet.get_Range("A1", "Q1").Font.Bold = true;
             oSheet.Columns["A:Q"].VerticalAlignment =
                 Microsoft.Office.Interop.Excel.XlVAlign.xlVAlignCenter;
             oSheet.Columns["A:Q"].WrapText = true;
             oSheet.get_Range("A1", "Q1").ColumnWidth = 20;
             oSheet.get_Range(rangeFrom, rangeTo).Value2 = data;
+            for (int i = 0; i < data.GetLength(0); i++)
+            {
+                string cellWithRef = "A" + (i + TITLE_OFFSET);
+                Microsoft.Office.Interop.Excel.Range excelCell = oSheet.get_Range(cellWithRef, Type.Missing);
+                Match match = Regex.Match(excelCell.Value2.ToString(), @"\d+(.html)$");
+                string linkTitle = match.Groups[0].Value.Replace(".html", "");
+                excelCell.Hyperlinks.Add(excelCell, excelCell.Value2.ToString(), Type.Missing, "Delphi LLC", linkTitle);
+            }
             oRng = oSheet.get_Range("A1", "Q1");
             oRng.EntireColumn.AutoFit();
 

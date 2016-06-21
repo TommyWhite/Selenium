@@ -11,7 +11,7 @@ namespace Employee_Data_Extractor
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, IDisposable
     {
         private HtmlHandler htmlHandler;
         private ExcelHandler xlsHanlder;
@@ -28,7 +28,6 @@ namespace Employee_Data_Extractor
         {
             htmlHandler = new HtmlHandler();
             xlsHanlder = new ExcelHandler();
-            
             //TODO: Remove in production.
             if (Debugger.IsAttached)
             {
@@ -85,7 +84,8 @@ namespace Employee_Data_Extractor
             {
                 var data = htmlHandler.ReadReportData(txtBoxToHtmlReport.Text);
 
-                xlsHanlder.CreateXlsDoc(txtBoxToHtmlReport.Text, "A2", $"P{data.GetLength(0)}", data);
+                using (xlsHanlder)
+                    xlsHanlder.CreateXlsDoc(txtBoxToHtmlReport.Text, "A2", $"P{data.GetLength(0)}", data);
             }
             catch (Exception ex)
             {
@@ -124,6 +124,12 @@ namespace Employee_Data_Extractor
             {
                 RaiseErorrMessageBox("Check if all file specified.", "Failure");
             }
+        }
+
+        public void Dispose()
+        {
+            xlsHanlder.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

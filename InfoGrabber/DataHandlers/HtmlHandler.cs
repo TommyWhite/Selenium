@@ -42,7 +42,7 @@ namespace EmployeeInfoGrabber
                 List<string> personData = RetrievePersonData(files[i]);
                 for (int j = 0; j < personData.Count; j++)
                 {
-                    data[i, j] = personData[j].ReplaceMany(new[] { "<b>", "</b>", "<br>" }, "");
+                    data[i, j] = personData[j].ReplaceMany(new[] { "<b>", "</b>", "<br>", "&nbsp;"}, " ");
                 }
             }
 

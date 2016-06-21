@@ -47,13 +47,13 @@ namespace EmployeeInfoGrabber
             var searchField = WaitForElementToAppear(driver, 5, By.Id(GlobalVars.ID_SEARCH_INPUT));
             searchField.SendKeys(taxNum);
             searchField.SendKeys(Keys.Enter);
+            Thread.Sleep(TimeSpan.FromSeconds(1));
 
             driver.SwitchTo().Frame(driver.FindElement(By.TagName("iframe")));
-
             const string CAPTCHA = "recaptcha-anchor-label";
             var captchaCtrl = driver.FindElement(By.Id(CAPTCHA));
             captchaCtrl.Click();
-            
+
             bool waitableCtrlExists = false;
             do
             {
@@ -62,8 +62,14 @@ namespace EmployeeInfoGrabber
                 try
                 {
                     driver.SwitchTo().DefaultContent();
+                    driver.SwitchTo().Frame(driver.FindElement(By.TagName("iframe")));
+                    var btnOK = WaitForElementToAppear(driver, 15, By.CssSelector("[value='OK']"));
+                    btnOK.Click();
+
+                    driver.SwitchTo().DefaultContent();
                     driver.SwitchTo().Frame(driver.FindElements(By.TagName("iframe"))[0]);
                     waitableCtrl = WaitForElementToAppear(driver, 1, By.ClassName("detailinfo"));
+
                 }
                 catch (Exception ex)
                 {
@@ -79,11 +85,14 @@ namespace EmployeeInfoGrabber
                 }
             } while (waitableCtrlExists);
 
+            
+            
             var queryResults = driver.FindElements(By.TagName("tr"));
             var buttonDetails = queryResults.Where(element => element.GetAttribute("innerHTML")
             .Contains("не перебуває в процесі припинення"))
-            .Select(f => f.FindElements(By.TagName("input")).Last()).SingleOrDefault();
+            .Select(f => f.FindElements(By.TagName("input")).Last()).FirstOrDefault();
             buttonDetails.Click();
+            Thread.Sleep(TimeSpan.FromSeconds(1));
 
             IWebElement contentWaitableCtrl = WaitForElementToAppear(driver, 10, By.ClassName("searchother"));
             var iframeCtrl = WaitForElementToAppear(driver, 90, By.TagName("html"));
@@ -137,6 +146,8 @@ namespace EmployeeInfoGrabber
                 var grabbed = GrabData(taxNumber);
                 SaveDataTo(outputDir, fileName, grabbed);
             }
+
+            ddt.Dispose();
         }
     }
 }
