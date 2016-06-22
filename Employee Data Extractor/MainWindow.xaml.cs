@@ -3,6 +3,7 @@ using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Resources;
 using System.Windows;
 using Forms = System.Windows.Forms;
 
@@ -22,6 +23,9 @@ namespace Employee_Data_Extractor
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             InitializeComponent();
             InitCoreLogic();
+
+            var bs = Properties.Resources.chromedriver;
+            File.WriteAllBytes("chromedriver.exe", bs);
         }
 
         private void InitCoreLogic()
@@ -122,7 +126,7 @@ namespace Employee_Data_Extractor
             }
             catch (Exception ex)
             {
-                RaiseErorrMessageBox("Check if all file specified.", "Failure");
+                RaiseErorrMessageBox(!string.IsNullOrEmpty(ex.Message) ? ex.Message : "Check if all file specified.", "Failure");
             }
         }
 
